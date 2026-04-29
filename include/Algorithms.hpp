@@ -12,6 +12,14 @@ public:
 
     // Usa a ordem topológica para calcular o Caminho Máximo (Makespan).
     static int calculateMakespan(const Graph& graph, const std::vector<int>& topoOrder);
+
+    // Retorna os IDs dos vértices com Grau de Entrada = 0
+    static std::vector<int> getMinimalElements(const Graph& graph);
+
+    // Retorna os IDs dos vértices com Grau de Saída = 0
+    static std::vector<int> getMaximalElements(const Graph& graph);
+
+    static std::vector<int> getCriticalPath(const Graph& graph, const std::vector<int>& topoOrder);
 };
 
 #endif

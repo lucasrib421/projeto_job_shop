@@ -76,3 +76,68 @@ int Algorithms::calculateMakespan(const Graph& graph, const std::vector<int>& to
 
     return makespan;
 }
+
+std::vector<int> Algorithms::getMinimalElements(const Graph& graph) {
+    std::vector<int> minimal;
+    for (int i = 0; i < graph.getNumVertices(); ++i) {
+        if (graph.getVertex(i).inDegree == 0) {
+            minimal.push_back(i);
+        }
+    }
+    return minimal;
+}
+
+std::vector<int> Algorithms::getMaximalElements(const Graph& graph) {
+    std::vector<int> maximal;
+    for (int i = 0; i < graph.getNumVertices(); ++i) {
+        // Grau de saída é o número de vizinhos na lista de adjacência
+        if (graph.getNeighbors(i).empty()) {
+            maximal.push_back(i);
+        }
+    }
+    return maximal;
+}
+
+std::vector<int> Algorithms::getCriticalPath(const Graph& graph, const std::vector<int>& topoOrder) {
+    int n = graph.getNumVertices();
+    std::vector<int> earlyStart(n, 0);
+    std::vector<int> earlyFinish(n, 0);
+    
+    // Vetor mágico que guarda "de onde vim"
+    std::vector<int> predecessor(n, -1); 
+
+    int makespan = 0;
+    int lastNode = -1; // Guarda o ID da tarefa que terminou por último
+
+    for (int u : topoOrder) {
+        int weight = graph.getVertex(u).weight;
+        earlyFinish[u] = earlyStart[u] + weight;
+
+        // Se essa tarefa terminar mais tarde que o recorde, ela é o novo fim do projeto
+        if (earlyFinish[u] > makespan) {
+            makespan = earlyFinish[u];
+            lastNode = u;
+        }
+
+        // Propaga o tempo para os vizinhos
+        for (int v : graph.getNeighbors(u)) {
+            if (earlyFinish[u] > earlyStart[v]) {
+                earlyStart[v] = earlyFinish[u];
+                predecessor[v] = u; // Marca 'u' como o culpado pelo atraso de 'v'
+            }
+        }
+    }
+
+    // Agora fazemos o caminho reverso (do último nó até o primeiro)
+    std::vector<int> criticalPath;
+    int current = lastNode;
+    while (current != -1) {
+        criticalPath.push_back(current);
+        current = predecessor[current]; // Dá um passo para trás
+    }
+
+    // Como pegamos do fim pro começo, precisamos inverter o vetor para a ordem correta
+    std::reverse(criticalPath.begin(), criticalPath.end());
+    
+    return criticalPath;
+}
