@@ -48,6 +48,10 @@ public:
     
     // Função para ajudar no debug
     void printGraph() const;
+
+    void setWeight(int u, int weight);
 };
+
+
 
 #endif

@@ -1,6 +1,8 @@
 #include "../include/Heuristics.hpp"
+#include "../include/Algorithms.hpp"
 #include <vector>
 #include <list>
+#include <algorithm>
 
 Graph Heuristics::applySPT(const Graph& initialGraph, int totalJobs, int totalMachines) {
     int n = initialGraph.getNumVertices();
@@ -118,4 +120,58 @@ Graph Heuristics::applyLPT(const Graph& initialGraph, int totalJobs, int totalMa
     }
 
     return finalGraph;
+}
+
+Graph Heuristics::applyMWKR(Graph grafoInicial, int jobs, int machines) {
+    int totalVertices = grafoInicial.getNumVertices();
+    
+    // Vetor para guardar o MWKR calculado de cada operação (id)
+    std::vector<int> mwkr(totalVertices, 0);
+
+    // 1. CÁLCULO DO MWKR (Trabalho Restante)
+    // Pegamos a ordem topológica para conseguir percorrer o grafo de trás para frente
+    std::vector<int> ordem = Algorithms::topologicalSort(grafoInicial);
+    
+    for (int i = ordem.size() - 1; i >= 0; --i) {
+        int u = ordem[i];
+        int maxTempoSucessores = 0;
+        
+        // Percorre os vizinhos (próximas operações do mesmo Job)
+        const std::vector<int>& vizinhos = grafoInicial.getNeighbors(u);
+        for (int v : vizinhos) {
+            if (mwkr[v] > maxTempoSucessores) {
+                maxTempoSucessores = mwkr[v];
+            }
+        }
+        
+        // MWKR de 'u' = Seu próprio peso + o maior caminho restante à frente
+        mwkr[u] = grafoInicial.getVertex(u).weight + maxTempoSucessores;
+    }
+
+    // 2. RESOLUÇÃO DOS CONFLITOS NAS MÁQUINAS
+    Graph grafoFinal = grafoInicial;
+    
+    // Agrupa os IDs das operações pela máquina onde elas vão rodar
+    std::vector<std::vector<int>> operacoesPorMaquina(machines);
+    for (int i = 0; i < totalVertices; ++i) {
+        int maq = grafoInicial.getVertex(i).machine;
+        operacoesPorMaquina[maq].push_back(i);
+    }
+
+    // Para cada máquina, ordenamos a fila de tarefas e criamos as arestas de restrição
+    for (int maq = 0; maq < machines; ++maq) {
+        std::vector<int>& filaDaMaquina = operacoesPorMaquina[maq];
+
+        // Ordenação MWKR: Quem tem o maior trabalho restante ganha prioridade
+        std::sort(filaDaMaquina.begin(), filaDaMaquina.end(), [&mwkr](int idA, int idB) {
+            return mwkr[idA] > mwkr[idB]; // Sinal de maior (>) garante a regra MWKR
+        });
+
+        // Cria arestas direcionadas garantindo a ordem na máquina (A -> B -> C...)
+        for (size_t i = 0; i < filaDaMaquina.size() - 1; ++i) {
+            grafoFinal.addEdge(filaDaMaquina[i], filaDaMaquina[i+1]);
+        }
+    }
+
+    return grafoFinal;
 }

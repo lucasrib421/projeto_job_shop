@@ -49,14 +49,12 @@ bool JobShopModeler::parseFile(const std::string& filename) {
 
     // 3. LER REGRAS DE PRECEDÊNCIA (Job: X)
     int currentJob = 0;
+    int jobIndex = 0;
     while (std::getline(file, line)) {
         if (line.find("Job:") != std::string::npos) {
             std::stringstream ss(line);
             ss >> tempStr >> currentJob; // Lê "Job:" e depois o número (que parece ser sempre o total-1 no seu txt)
-            
-            // Mas para garantir a ordem correta, vamos usar um contador próprio
-            static int jobIndex = 0; 
-            
+               
             // Lê as linhas vazias ou com "->", até acabarem as regras desse job
             for (int i = 0; i < totalMachines - 1; ++i) {
                 std::getline(file, line);
