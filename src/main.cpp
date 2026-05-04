@@ -46,7 +46,7 @@ void generateReport(std::ostream& os,
 
 int main() {
     JobShopModeler modeler;
-    std::string path = "../data/JSP/yn4Jsp.psi";
+    std::string path = "../data/JSP/yn2Jsp.psi";
     
     if (modeler.parseFile(path)) {
         Graph grafoInicial = modeler.buildInitialGraph();

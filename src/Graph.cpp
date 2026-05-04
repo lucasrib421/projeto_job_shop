@@ -63,3 +63,7 @@ void Graph::printGraph() const {
     }
     std::cout << "--------------------------------\n" << std::endl;
 }
+
+void Graph::setWeight(int u, int weight) {
+    vertices[u].weight = weight;
+}
